@@ -1,5 +1,7 @@
 import fetch from "node-fetch";
-
+import * as utilities from "./utilities";
+export { utilities };
+const { currencyExchange, diffDays, addDays } = utilities;
 const API_ENDPOINT = "http://api.exchangeratesapi.io/v1/";
 
 const DEFAULT_BASE = "EUR";
@@ -120,7 +122,7 @@ export class exchangeratesapi {
         if (params.symbols instanceof Array) {
           for (const symbol of params.symbols) {
             if (symbol in responseRates && params.base in responseRates)
-              rates[symbol] = this.currencyExchange(
+              rates[symbol] = currencyExchange(
                 responseRates[params.base],
                 responseRates[symbol]
               );
@@ -129,14 +131,14 @@ export class exchangeratesapi {
           params.symbols in responseRates &&
           params.base in responseRates
         ) {
-          rates[params.symbols] = this.currencyExchange(
+          rates[params.symbols] = currencyExchange(
             responseRates[params.base],
             responseRates[params.symbols]
           );
         }
       } else {
         for (const symbol of Object.keys(responseRates)) {
-          rates[symbol] = this.currencyExchange(
+          rates[symbol] = currencyExchange(
             responseRates[params.base],
             responseRates[symbol]
           );
@@ -171,7 +173,7 @@ export class exchangeratesapi {
     const rates = await this.historical(requestParams);
     let rate;
     if (params.from in rates.rates && params.to in rates.rates) {
-      rate = this.currencyExchange(
+      rate = currencyExchange(
         rates.rates[params.from],
         rates.rates[params.to]
       );
@@ -204,10 +206,10 @@ export class exchangeratesapi {
       throw new Error("The end_date is older than the start_date.");
     }
     const rateResponses = [];
-    const days = this.diffDays(params.start_date, params.end_date);
+    const days = diffDays(params.start_date, params.end_date);
     for (let i = 0; i < days + 1; i++) {
       const rateParams: IExchangeratesapiParams = {
-        date: this.addDays(startDate, i),
+        date: addDays(startDate, i),
         base: params.base,
         symbols: params.symbols,
       };
@@ -255,47 +257,6 @@ export class exchangeratesapi {
         return json;
       });
     return response;
-  }
-
-  private currencyExchange(baseRate: number, symbolRate: number): number {
-    return Math.round((symbolRate / baseRate) * 1000000) / 1000000;
-  }
-
-  private diffDays(startDate: string, endDate: string): number {
-    const date1 = new Date(startDate);
-    const date2 = new Date(endDate);
-    const diffTime = Math.abs(date2.valueOf() - date1.valueOf());
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return diffDays;
-  }
-
-  private addDays(date: Date, days: number): string {
-    const result = new Date(date.valueOf());
-    result.setDate(result.getDate() + days);
-    return this.formatDate(result, "yyyy-MM-dd");
-  }
-
-  private formatDate(date: Date, format: string) {
-    format = format.replace(/yyyy/g, date.getFullYear().toString());
-    format = format.replace(
-      /MM/g,
-      (date.getMonth() + 1).toString().padStart(2, "0")
-    );
-    format = format.replace(/dd/g, date.getDate().toString().padStart(2, "0"));
-    format = format.replace(/HH/g, date.getHours().toString().padStart(2, "0"));
-    format = format.replace(
-      /mm/g,
-      date.getMinutes().toString().padStart(2, "0")
-    );
-    format = format.replace(
-      /ss/g,
-      date.getSeconds().toString().padStart(2, "0")
-    );
-    format = format.replace(
-      /SSS/g,
-      date.getMilliseconds().toString().padStart(3, "0")
-    );
-    return format;
   }
 }
 
