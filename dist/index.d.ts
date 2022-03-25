@@ -1,3 +1,5 @@
+import * as utilities from "./utilities";
+export { utilities };
 export interface IExchangeratesapiParams {
     date?: string;
     base?: string;
@@ -59,9 +61,5 @@ export declare class exchangeratesapi {
     convert(params: IExchangeratesapiConvertParams): Promise<IExchangeratesapiConvertResponse>;
     timeseries(params: IExchangeratesapiTimeseriesParams): Promise<IExchangeratesapiTimeseriesResponse>;
     private request;
-    private currencyExchange;
-    private diffDays;
-    private addDays;
-    private formatDate;
 }
 export default exchangeratesapi;
