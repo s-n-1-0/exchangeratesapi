@@ -112,7 +112,7 @@ export class exchangeratesapi {
     }
 
     let url = `${API_ENDPOINT}/${date}?access_key=${this.ACCESS_KEY}&base=${base}`;
-    if (!symbols) url += `&symbols=${symbols}`;
+    if (symbols) url += `&symbols=${symbols}`;
 
     const response = await this.request(url);
     if (params.base && base !== params.base) {
